@@ -1,15 +1,19 @@
 set -ex
 
-MPICC=mpicc
+if [[ "$(uname)" == "Linux" ]]; then
+  CC=gcc
+else
+  CC=clang
+fi
+
 FC=lfortran
 FFLAGS="-lmpi"
 
 cd src
-${MPICC} -c mpi_wrapper.c
-${FC} ${FFLAGS} -c mpi_c_bindings.f90
-${FC} ${FFLAGS} -c mpi.f90
-${FC} ${FFLAGS} -c psi_io.f90
-${FC} -E ${FFLAGS} --cpp pot3d.F90 > pot3d_cpp.f90
-${FC} -c ${FFLAGS} --implicit-interface pot3d_cpp.f90 --show-asr
-# ${FC} ${FFLAGS} mpi_wrapper.o mpi_c_bindings.o mpi.o psi_io.o pot3d_cpp.o -o pot3d
+${CC} -I$CONDA_PREFIX/include -c mpi_wrapper.c
+${FC} -c mpi_c_bindings.f90
+${FC} -c mpi.f90
+${FC} -c psi_io.f90
+${FC} -c --cpp --implicit-interface pot3d.F90
+# ${FC} mpi_wrapper.o mpi_c_bindings.o mpi.o psi_io.o pot3d.o -o pot3d -L$CONDA_PREFIX/lib -lmpi
 # cp pot3d ../bin/
